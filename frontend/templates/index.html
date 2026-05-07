@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="qq">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    (function(){
+      if (!localStorage.getItem('sb_token')) {
+        window.location.replace('/login');
+      }
+    })();
+  </script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBiz AI — Biznes Basqarıw</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    :root {
+      --bg: #f5f4f0; --surface: #fff; --border: rgba(0,0,0,0.08);
+      --text: #1a1a18; --muted: #6b6a66; --accent: #1a5fb4;
+      --accent-soft: #e8f0fc; --success: #2d7d46; --success-bg: #e8f5ec;
+      --danger: #c0392b; --danger-bg: #fdecea; --warn: #a04000; --warn-bg: #fff3e8;
+      --nav-w: 220px; --radius: 10px; --radius-sm: 6px;
+      font-family: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; display: flex; height: 100vh; overflow: hidden; }
+
+    /* ─── SIDEBAR ─── */
+    #sidebar {
+      width: var(--nav-w); min-width: var(--nav-w);
+      background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; padding: 0; overflow: hidden;
+    }
+    .sb-logo { padding: 18px 16px 14px; border-bottom: 1px solid var(--border); }
+    .sb-logo-name { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+    .sb-logo-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+    .sb-store {
+      margin: 10px 10px 4px; padding: 8px 12px;
+      background: var(--bg); border-radius: var(--radius-sm);
+      border: 1px solid var(--border); cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sb-store:hover { border-color: var(--accent); }
+    .sb-store-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+    .sb-store-name { font-size: 12px; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sb-store-arr { font-size: 9px; color: var(--muted); }
+
+    .sb-nav { flex: 1; padding: 6px 0; overflow-y: auto; }
+    .nav-section { padding: 10px 16px 4px; font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.8px; text-transform: uppercase; }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px 8px 14px; margin: 1px 8px;
+      border-radius: var(--radius-sm); cursor: pointer;
+      color: var(--muted); font-size: 13px; font-weight: 400;
+      transition: all 0.12s;
+    }
+    .nav-item:hover { background: var(--bg); color: var(--text); }
+    .nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+    .nav-icon { width: 18px; height: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .nav-badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 20px; }
+
+    .sb-add-store {
+      margin: 8px 10px 14px; padding: 7px 12px;
+      font-size: 12px; color: var(--muted); background: none;
+      border: 1px dashed var(--border); border-radius: var(--radius-sm);
+      cursor: pointer; width: calc(100% - 20px); text-align: left;
+      transition: all 0.12s;
+    }
+    .sb-add-store:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ─── MAIN AREA ─── */
+    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .topbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 22px; height: 52px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-title { font-size: 15px; font-weight: 600; }
+    .topbar-date { font-size: 12px; color: var(--muted); background: var(--bg); padding: 3px 10px; border-radius: 20px; }
+    .topbar-right { display: flex; gap: 8px; align-items: center; }
+
+    .btn { padding: 7px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text); transition: all 0.12s; font-family: inherit; }
+    .btn:hover { background: var(--bg); }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover { background: #1450a0; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+    #content { flex: 1; overflow-y: auto; padding: 20px 22px; }
+
+    /* ─── METRICS ─── */
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .metric {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px;
+    }
+    .metric-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .metric-value { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+    .metric-change { font-size: 11px; margin-top: 4px; }
+    .up { color: var(--success); } .down { color: var(--danger); }
+
+    /* ─── GRID ─── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .grid-full { margin-bottom: 14px; }
+
+    /* ─── CARD ─── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .card-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .card-title { font-size: 13px; font-weight: 600; }
+    .badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+    .badge-success { background: var(--success-bg); color: var(--success); }
+    .badge-danger { background: var(--danger-bg); color: var(--danger); }
+    .badge-warn { background: var(--warn-bg); color: var(--warn); }
+    .badge-info { background: var(--accent-soft); color: var(--accent); }
+
+    /* ─── PRODUCT ROWS ─── */
+    .prod-list { display: flex; flex-direction: column; gap: 6px; }
+    .prod-row { display: flex; align-items: center; gap: 10px; padding: 7px 10px; background: var(--bg); border-radius: var(--radius-sm); }
+    .prod-rank { font-size: 11px; color: var(--muted); width: 18px; text-align: right; flex-shrink: 0; }
+    .prod-name { flex: 1; font-size: 13px; }
+    .prod-bar-w { width: 70px; height: 4px; background: var(--border); border-radius: 2px; flex-shrink: 0; }
+    .prod-bar { height: 100%; border-radius: 2px; }
+    .prod-val { font-size: 12px; font-weight: 500; min-width: 70px; text-align: right; color: var(--muted); }
+
+    /* ─── DEBT ROWS ─── */
+    .debt-list { display: flex; flex-direction: column; gap: 6px; }
+    .debt-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .debt-row.overdue { border-color: #f0a0a0; background: var(--danger-bg); }
+    .debt-name { font-size: 13px; font-weight: 500; }
+    .debt-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .debt-amt { font-size: 13px; font-weight: 600; text-align: right; }
+    .debt-row.overdue .debt-amt { color: var(--danger); }
+
+    /* ─── STOCK ─── */
+    .stock-list { display: flex; flex-direction: column; gap: 6px; }
+    .stock-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg); border-radius: var(--radius-sm); border: 1px solid transparent; }
+    .stock-row.low { border-color: #f0a0a0; background: var(--danger-bg); }
+    .stock-row.warn { border-color: #f5d0a0; background: var(--warn-bg); }
+    .stock-name { font-size: 13px; flex: 1; }
+    .stock-qty { font-size: 13px; font-weight: 600; }
+    .stock-ok { color: var(--success); } .stock-low { color: var(--danger); } .stock-warn { color: var(--warn); }
+
+    /* ─── AI TIPS ─── */
+    .ai-list { display: flex; flex-direction: column; gap: 8px; }
+    .ai-tip { display: flex; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent); background: var(--bg); }
+    .ai-tip.success { border-color: var(--success); }
+    .ai-tip.danger { border-color: var(--danger); }
+    .ai-tip.warning { border-color: var(--warn); }
+    .ai-tip-body { flex: 1; }
+    .ai-tip-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .ai-tip-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ─── FORMS ─── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .label { font-size: 11px; font-weight: 500; color: var(--muted); }
+    .input, select, textarea {
+      padding: 8px 10px; font-size: 13px; font-family: inherit;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--bg); color: var(--text); width: 100%;
+      transition: border-color 0.12s;
+    }
+    .input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+    .input[readonly] { opacity: 0.6; }
+    .input-mono { font-family: 'DM Mono', monospace; }
+
+    /* ─── MODAL ─── */
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 999; align-items: center; justify-content: center; }
+    .modal-bg.open { display: flex; }
+    .modal { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 22px; width: 420px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+    .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 18px; }
+    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+
+    /* ─── UPLOAD ZONE ─── */
+    .upload-zone {
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      padding: 30px; text-align: center; cursor: pointer;
+      transition: all 0.12s; margin-bottom: 12px;
+    }
+    .upload-zone:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .upload-zone.drag { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* ─── CHART ─── */
+    .chart-wrap { position: relative; width: 100%; height: 200px; }
+    .chart-wrap-tall { position: relative; width: 100%; height: 260px; }
+
+    /* ─── TABS ─── */
+    .tabs { display: flex; gap: 2px; background: var(--bg); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 14px; width: fit-content; }
+    .tab { padding: 5px 12px; font-size: 12px; border-radius: 5px; cursor: pointer; color: var(--muted); transition: all 0.12s; }
+    .tab.active { background: var(--surface); color: var(--text); font-weight: 500; border: 1px solid var(--border); }
+
+    /* ─── TABLE ─── */
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+    td { font-size: 13px; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg); }
+
+    /* ─── TOAST ─── */
+    #toast { position: fixed; bottom: 20px; right: 20px; background: var(--text); color: #fff; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .divider { height: 1px; background: var(--border); margin: 14px 0; }
+    .text-muted { color: var(--muted); }
+    .text-sm { font-size: 12px; }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-name">SmartBiz AI</div>
+    <div class="sb-logo-sub">Biznes basqarıw sisteması</div>
+  </div>
+
+  <div class="sb-store" onclick="openModal('store-modal')">
+    <div class="sb-store-dot"></div>
+    <div class="sb-store-name" id="sb-store-name">Júklenmekte...</div>
+    <div class="sb-store-arr">▼</div>
+  </div>
+
+  <div class="sb-nav">
+    <div class="nav-section">Tiykarǵı</div>
+    <div class="nav-item active" data-page="dashboard">
+      <div class="nav-icon">⊞</div> Dashboard
+    </div>
+    <div class="nav-item" data-page="daily">
+      <div class="nav-icon">＋</div> Kúnlik kiritiw
+    </div>
+    <div class="nav-section">Basqarıw</div>
+    <div class="nav-item" data-page="stock">
+      <div class="nav-icon">⊟</div> Sklad
+    </div>
+    <div class="nav-item" data-page="debt">
+      <div class="nav-icon">◈</div> Qarız dápteri
+      <div class="nav-badge" id="debt-badge" style="display:none">0</div>
+    </div>
+    <div class="nav-item" data-page="sales-history">
+      <div class="nav-icon">☰</div> Sawda tariyxı
+    </div>
+    <div class="nav-section">AI hám Analiz</div>
+    <div class="nav-item" data-page="analytics">
+      <div class="nav-icon">◑</div> Analiz
+    </div>
+    <div class="nav-item" data-page="forecast">
+      <div class="nav-icon">↗</div> Prognoz
+    </div>
+    <div class="nav-item" data-page="upload">
+      <div class="nav-icon">⇧</div> Fayl júklew
+    </div>
+    <div class="nav-section">AI Premium</div>
+    <div class="nav-item" data-page="ai-chat">
+      <div class="nav-icon">◈</div> AI Járdemshi
+      <div class="nav-badge" id="ai-badge" style="display:none;background:linear-gradient(135deg,#c9973a,#a87828);">AI</div>
+    </div>
+    <div class="nav-item" data-page="ai-report">
+      <div class="nav-icon">◑</div> AI Esabat
+    </div>
+    <div class="nav-item" data-page="ai-settings">
+      <div class="nav-icon">⚙</div> AI Sazlama
+    </div>
+  </div>
+
+  <button class="sb-add-store" onclick="openModal('new-store-modal')">+ Dúkan / Filial qosıw</button>
+</nav>
+
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-date" id="today-date"></div>
+    </div>
+    <div class="topbar-right">
+      <span style="font-size:12px;color:var(--muted);background:var(--bg);padding:4px 10px;border-radius:20px;" id="user-greeting"></span>
+      <button class="btn btn-sm" onclick="navigate('upload')">⇧ Fayl júklew</button>
+      <button class="btn btn-primary btn-sm" onclick="navigate('daily')">＋ Kúnlik kiritiw</button>
+      <button class="btn btn-sm" onclick="logout()" title="Shıǵıw" style="color:var(--danger);">⏻</button>
+    </div>
+  </div>
+  <div id="content">
+    <div class="empty-state">Júklenmekte...</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div class="modal-bg" id="store-modal">
+  <div class="modal" style="width:340px;">
+    <div class="modal-title">Dúkanlardı tańlaw</div>
+    <div id="store-list-modal" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('store-modal')">Jabıw</button>
+      <button class="btn btn-primary" onclick="closeModal('store-modal');openModal('new-store-modal')">+ Taza qosıw</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="new-store-modal">
+  <div class="modal" style="width:380px;">
+    <div class="modal-title">Taza dúkan qosıw</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="form-group">
+        <label class="label">Dúkan atı *</label>
+        <input class="input" id="ns-name" placeholder="Mısalı: Tiykarǵı dúkan">
+      </div>
+      <div class="form-group">
+        <label class="label">Túri</label>
+        <select id="ns-type">
+          <option value="dokon">Dúkan</option>
+          <option value="restoran">Restoran</option>
+          <option value="filial">Filial</option>
+          <option value="ombor">Ammar</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label">Mánzil</label>
+        <input class="input" id="ns-address" placeholder="Qala, kóshe">
+      </div>
+      <div class="form-group">
+        <label class="label">Telefon</label>
+        <input class="input" id="ns-phone" placeholder="+998 90 000 00 00">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('new-store-modal')">Biykarlaw</button>
+      <button class="btn btn-primary" onclick="createStore()">Qosıw</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="debt-modal">
+  <div class="modal">
+    <div class="modal-title">Taza qarız qosıw</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label class="label">Atı familiyası *</label>
+        <input class="input" id="d-name" placeholder="Tolıq atı">
+      </div>
+      <div class="form-group">
+        <label class="label">Telefon</label>
+        <input class="input" id="d-phone" placeholder="+998...">
+      </div>
+      <div class="form-group">
+        <label class="label">Túri</label>
+        <select id="d-type">
+          <option value="mijoz">Qarıydar qarız aldı</option>
+          <option value="yetkazuvchi">Jetkerip beriwshige qarızımız</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label">Qarız summası (sum) *</label>
+        <input class="input input-mono" id="d-amount" type="number" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="label">Tólew múddeti</label>
+        <input class="input" id="d-due" type="date">
+      </div>
+      <div class="form-group full">
+        <label class="label">Túsindirme</label>
+        <input class="input" id="d-note" placeholder="Qálewge qaray">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('debt-modal')">Biykarlaw</button>
+      <button class="btn btn-primary" onclick="saveDebt()">Saqlaw</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="product-modal">
+  <div class="modal">
+    <div class="modal-title">Ónim qosıw / ózgertiw</div>
+    <input type="hidden" id="pm-id">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label class="label">Ónim atı *</label>
+        <input class="input" id="pm-name" placeholder="Nan, Sút, Gósh...">
+      </div>
+      <div class="form-group">
+        <label class="label">Kategoriya</label>
+        <select id="pm-cat">
+          <option>azıq-awqat</option><option>ishimlik</option>
+          <option>úy-rozaǵar</option><option>kiyim</option><option>ulıwma</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label">Ólshem</label>
+        <select id="pm-unit">
+          <option>dana</option><option>kg</option><option>litr</option>
+          <option>qutı</option><option>paket</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label">Házirgi muǵdarı</label>
+        <input class="input input-mono" id="pm-qty" type="number" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="label">Minimum shegara (eskertiw)</label>
+        <input class="input input-mono" id="pm-min" type="number" placeholder="5">
+      </div>
+      <div class="form-group">
+        <label class="label">Satıp alıw bahası (sum)</label>
+        <input class="input input-mono" id="pm-buy" type="number" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="label">Satıw bahası (sum)</label>
+        <input class="input input-mono" id="pm-sell" type="number" placeholder="0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('product-modal')">Biykarlaw</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Saqlaw</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = '';  // same origin
+  let storeId = null;
+  let stores  = [];
+  let charts  = {};
+  let currentPage = 'dashboard';
+
+  // ── UTILS ──
+  const fmt = n => Math.round(n).toLocaleString('uz-UZ');
+  const fmtM = n => { if(n>=1e9) return (n/1e9).toFixed(1)+'mlrd'; if(n>=1e6) return (n/1e6).toFixed(1)+'mln'; return fmt(n); };
+  const $ = id => document.getElementById(id);
+  const toast = (msg, dur=2500) => { const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), dur); };
+  const openModal  = id => $(id).classList.add('open');
+  const closeModal = id => $(id).classList.remove('open');
+  const destroyCharts = () => { Object.values(charts).forEach(c=>c.destroy()); charts={}; };
+
+  async function api(path, opts={}) {
+    const token = localStorage.getItem('sb_token');
+    const headers = {'Content-Type':'application/json', ...(token ? {'Authorization': 'Bearer '+token} : {})};
+    const r = await fetch(API + path, { headers, ...opts });
+    if(r.status === 401) { logout(); return; }
+    if(!r.ok) { const e=await r.json().catch(()=>{}); throw new Error(e?.detail || r.statusText); }
+    return r.json();
+  }
+
+  function logout() {
+    localStorage.removeItem('sb_token');
+    localStorage.removeItem('sb_user_name');
+    localStorage.removeItem('sb_user_email');
+    window.location.replace('/login');
+  }
+
+  function getGreeting() {
+    const h = new Date().getHours();
+    if(h < 12) return 'Qayırlı tań';
+    if(h < 18) return 'Qayırlı kún';
+    return 'Qayırlı kesh';
+  }
+
+  // ── INIT ──
+  async function init() {
+    const d = new Date();
+    const days = ['Ekshembi','Dúyshembi','Siyshembi','Sárshembi','Piyshembi','Juma','Shembi'];
+    $('today-date').textContent = `${days[d.getDay()]}, ${d.toLocaleDateString('uz-UZ',{day:'numeric',month:'long',year:'numeric'})}`;
+
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.addEventListener('click', () => navigate(el.dataset.page));
+    });
+
+    await loadStores();
+    await navigate('dashboard');
+    await updateDebtBadge();
+    const name = localStorage.getItem('sb_user_name') || '';
+    const greeting = getGreeting();
+    const el = document.getElementById('user-greeting');
+    if(el) el.textContent = greeting + (name ? ', ' + name.split(' ')[0] : '') + '!';
+  }
+
+  async function loadStores() {
+    stores = await api('/api/stores/');
+    if(!stores.length) { stores = [{id:1,name:"Dúkanım #1",store_type:"dokon"}]; }
+    storeId = stores[0].id;
+    $('sb-store-name').textContent = stores[0].name;
+
+    const list = $('store-list-modal');
+    list.innerHTML = stores.map(s => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:${s.id===storeId?'var(--accent-soft)':''}"
+           onclick="selectStore(${s.id},'${s.name}')">
+        <div style="width:8px;height:8px;border-radius:50%;background:${s.id===storeId?'var(--accent)':'var(--border)'}"></div>
+        <div style="flex:1;font-size:13px;font-weight:${s.id===storeId?'600':'400'}">${s.name}</div>
+        <div style="font-size:11px;color:var(--muted)">${s.store_type}</div>
+      </div>`).join('');
+  }
+
+  function selectStore(id, name) {
+    storeId = id;
+    $('sb-store-name').textContent = name;
+    closeModal('store-modal');
+    navigate(currentPage);
+  }
+
+  async function createStore() {
+    const name = $('ns-name').value.trim();
+    if(!name) { toast('Dúkan atın kiritiń'); return; }
+    try {
+      const s = await api('/api/stores/', { method:'POST', body: JSON.stringify({
+        name, store_type: $('ns-type').value,
+        address: $('ns-address').value, phone: $('ns-phone').value
+      })});
+      toast(`"${s.name}" qosıldı`);
+      closeModal('new-store-modal');
+      ['ns-name','ns-address','ns-phone'].forEach(id=>$(id).value='');
+      await loadStores();
+      selectStore(s.id, s.name);
+    } catch(e) { toast('Qátelik: '+e.message); }
+  }
+
+  async function updateDebtBadge() {
+    try {
+      const s = await api(`/api/debts/summary?store_id=${storeId}`);
+      const b = $('debt-badge');
+      if(s.overdue_count > 0) { b.textContent = s.overdue_count; b.style.display='block'; }
+      else { b.style.display='none'; }
+    } catch(e) {}
+  }
+
+  // ── NAVIGATION ──
+  async function navigate(page) {
+    if(!page) return;
+    currentPage = page;
+    destroyCharts();
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.page === page);
+    });
+    const titles = {
+      dashboard:'Dashboard', daily:'Kúnlik kiritiw', stock:'Sklad',
+      debt:'Qarız dápteri', 'sales-history':'Sawda tariyxı',
+      analytics:'AI Analizi', forecast:'Sawda prognozi', upload:'Fayl júklew', 'ai-chat':'AI Járdemshi', 'ai-report':'AI Aylıq Esabat', 'ai-settings':'AI Sazlamaları'
+    };
+    $('page-title').textContent = titles[page] || page;
+    $('content').innerHTML = '<div class="empty-state">Júklenmekte...</div>';
+    try {
+      await pages[page]();
+    } catch(e) {
+      $('content').innerHTML = `<div class="empty-state">Qátelik: ${e.message}</div>`;
+    }
+  }
+
+  const pages = { dashboard, daily, stock, debt, 'sales-history': salesHistory, analytics, forecast, upload, 'ai-chat': aiChat, 'ai-report': aiReport, 'ai-settings': aiSettings };
+
+  // ──────────────────────────────────────────────
+  // DASHBOARD
+  // ──────────────────────────────────────────────
+  async function dashboard() {
+    // ai-insights tugma bosilganda yuklanadi — avtomatik EMAS (Gemini limit tejash)
+    const [ov, weekly, top, slow] = await Promise.all([
+      api(`/api/analytics/overview?store_id=${storeId}`),
+      api(`/api/sales/weekly?store_id=${storeId}`),
+      api(`/api/analytics/top-products?store_id=${storeId}&limit=5`),
+      api(`/api/analytics/slow-products?store_id=${storeId}`)
+    ]);
+
+    const topRevMax = top.length ? Math.max(...top.map(p=>p.revenue)) : 1;
+
+    $('content').innerHTML = `
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Búgingi sawda</div>
+          <div class="metric-value">${fmtM(ov.today_total)}</div>
+          <div class="metric-change ${ov.day_change>=0?'up':'down'}">${ov.day_change>=0?'▲':'▼'} ${Math.abs(ov.day_change)}% keshegige qaraǵanda</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Aylıq dáramat</div>
+          <div class="metric-value">${fmtM(ov.month_total)}</div>
+          <div class="metric-change ${ov.month_change>=0?'up':'down'}">${ov.month_change>=0?'▲':'▼'} ${Math.abs(ov.month_change)}% ótken ayǵa</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Aktiv qarızlar</div>
+          <div class="metric-value">${fmtM(ov.total_debt)}</div>
+          <div class="metric-change ${ov.overdue_debts>0?'down':'up'}">${ov.overdue_debts>0?'▼ '+ov.overdue_debts+' ta múddeti ótken':'✓ Hámmesi saz'}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Sklad jaǵdayı</div>
+          <div class="metric-value">${ov.low_stock_count > 0 ? ov.low_stock_count+' ta kem' : 'Saz'}</div>
+          <div class="metric-change ${ov.low_stock_count>0?'down':'up'}">${ov.low_stock_count>0?'▼ Dıqqat talap etedi':'✓ Zapas jetkilikli'}</div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Háptelik sawda</div>
+            <span class="badge badge-info">7 kún</span>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-weekly" role="img" aria-label="Háptelik sawda grafigi">Háptelik sawda.</canvas></div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;">
+          <div class="card-hdr">
+            <div class="card-title">AI Másláhátleri</div>
+            <span class="badge" style="background:linear-gradient(135deg,rgba(201,151,58,.15),rgba(201,151,58,.05));color:#8a6520;border:1px solid rgba(201,151,58,.25);">Gemini</span>
+          </div>
+          <div id="dash-ai-content" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 0;gap:12px;">
+            <div style="font-size:28px;opacity:.25;">◈</div>
+            <div style="font-size:13px;color:var(--muted);text-align:center;line-height:1.6;">
+              Dúkanıńız ushın real AI<br>másláhátler alıw ushın basıń
+            </div>
+            <button onclick="loadDashAI()" id="dash-ai-btn"
+              style="padding:8px 20px;background:linear-gradient(135deg,#c9973a,#a87828);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 3px 14px rgba(201,151,58,.3);transition:opacity .15s;">
+              ◈ AI analiz qılsın
+            </button>
+            <div style="font-size:11px;color:var(--muted);">1 soraw jumsaladı</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">Kóp satılatuǵın ónimler</div><span class="badge badge-success">Top ${top.length}</span></div>
+          <div class="prod-list">
+            ${top.map((p,i)=>`
+            <div class="prod-row">
+              <div class="prod-rank">${i+1}</div>
+              <div class="prod-name">${p.name}</div>
+              <div class="prod-bar-w"><div class="prod-bar" style="width:${Math.round(p.revenue/topRevMax*100)}%;background:#2d7d46"></div></div>
+              <div class="prod-val">${fmtM(p.revenue)} sum</div>
+            </div>`).join('')}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">Ásten satılatuǵın</div><span class="badge badge-danger">Dıqqat</span></div>
+          <div class="prod-list">
+            ${slow.map((p,i)=>`
+            <div class="prod-row">
+              <div class="prod-rank">${i+1}</div>
+              <div class="prod-name">${p.name}</div>
+              <div class="prod-bar-w"><div class="prod-bar" style="width:${20+i*10}%;background:#c0392b"></div></div>
+              <div class="prod-val">${fmt(p.sell_price)} sum</div>
+            </div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+
+    // Weekly chart
+    const labels = weekly.map(r => new Date(r.date).toLocaleDateString('uz-UZ',{weekday:'short'}));
+    const amounts = weekly.map(r => r.total);
+    charts.weekly = new Chart($('chart-weekly'), {
+      type: 'bar',
+      data: { labels, datasets: [{ data: amounts, backgroundColor: '#c8d9f5', borderColor: '#1a5fb4', borderWidth: 1.5, borderRadius: 5 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+        scales:{ y:{ticks:{callback:v=>fmtM(v),font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}}, x:{ticks:{font:{size:11}},grid:{display:false}} } }
+    });
+  }
+
+  // ──────────────────────────────────────────────
+  // DAILY INPUT
+  // ──────────────────────────────────────────────
+  async function daily() {
+    const products = await api(`/api/products/?store_id=${storeId}`);
+    const today = new Date().toISOString().split('T')[0];
+
+    $('content').innerHTML = `
+      <div style="max-width:640px;">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-hdr"><div class="card-title">Búgingi sawda maǵlıwmatları</div></div>
+          <div class="form-grid" style="margin-bottom:14px;">
+            <div class="form-group">
+              <label class="label">Sáne *</label>
+              <input class="input" id="sale-date" type="date" value="${today}">
+            </div>
+            <div class="form-group">
+              <label class="label">Ulıwma sawda (sum) *</label>
+              <input class="input input-mono" id="sale-total" type="number" placeholder="0" oninput="calcProfit()">
+            </div>
+            <div class="form-group">
+              <label class="label">Naq pul</label>
+              <input class="input input-mono" id="sale-cash" type="number" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="label">Plastik / karta</label>
+              <input class="input input-mono" id="sale-card" type="number" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="label">Qárejetler (sum)</label>
+              <input class="input input-mono" id="sale-exp" type="number" placeholder="0" oninput="calcProfit()">
+            </div>
+            <div class="form-group">
+              <label class="label">Taza payda</label>
+              <input class="input input-mono" id="sale-profit" type="number" placeholder="avtomat" readonly>
+            </div>
+            <div class="form-group">
+              <label class="label">Qarıydarlar sanı</label>
+              <input class="input input-mono" id="sale-customers" type="number" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="label">Túsindirme</label>
+              <input class="input" id="sale-note" placeholder="Qálewge qaray">
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="card-title" style="margin-bottom:12px;">Ónim satıwları (qálewge qaray)</div>
+          <div id="sale-items"></div>
+          <button class="btn btn-sm" style="margin-top:8px;" onclick="addSaleItem(${JSON.stringify(products).replace(/"/g,'&quot;')})">+ Ónim qosıw</button>
+
+          <div style="display:flex;gap:8px;margin-top:18px;">
+            <button class="btn btn-primary" style="flex:1;" onclick="saveSale()">&#128190; Saqlaw</button>
+            <button class="btn" onclick="navigate('dashboard')">Biykarlaw</button>
+          </div>
+          <div id="sale-msg" style="display:none;padding:8px 12px;background:var(--success-bg);color:var(--success);border-radius:6px;font-size:13px;margin-top:10px;font-weight:500;">&#10003; Tabıslı saqlandı!</div>
+        </div>
+      </div>`;
+  }
+
+  function calcProfit() {
+    const t = +$('sale-total').value || 0;
+    const e = +$('sale-exp').value || 0;
+    $('sale-profit').value = t - e;
+  }
+
+  let saleItemCount = 0;
+  function addSaleItem(products) {
+    const i = ++saleItemCount;
+    const opts = products.map(p=>`<option value="${p.id}" data-price="${p.sell_price}">${p.name} (${fmt(p.sell_price)} sum)</option>`).join('');
+    const div = document.createElement('div');
+    div.id = `si-${i}`;
+    div.style.cssText = 'display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:end;';
+    div.innerHTML = `
+      <div class="form-group">
+        <label class="label">Ónim</label>
+        <select class="input" onchange="fillPrice(this,${i})">${opts}<option value="">Basqa...</option></select>
+      </div>
+      <div class="form-group">
+        <label class="label">Muǵdarı</label>
+        <input class="input input-mono" id="si-qty-${i}" type="number" placeholder="1" oninput="fillTotal(${i})">
+      </div>
+      <div class="form-group">
+        <label class="label">Baha</label>
+        <input class="input input-mono" id="si-price-${i}" type="number" placeholder="0" oninput="fillTotal(${i})">
+      </div>
+      <button class="btn btn-sm" style="margin-bottom:1px;" onclick="$(${`'si-${i}'`}).remove()">&#10005;</button>`;
+    $('sale-items').appendChild(div);
+  }
+
+  function fillPrice(sel, i) {
+    const opt = sel.options[sel.selectedIndex];
+    const price = opt.dataset.price || 0;
+    $(`si-price-${i}`).value = price;
+    fillTotal(i);
+  }
+  function fillTotal(i) {
+    const q = +$(`si-qty-${i}`)?.value || 0;
+    const p = +$(`si-price-${i}`)?.value || 0;
+    // just for reference, not stored separately
+  }
+
+  async function saveSale() {
+    const total = +$('sale-total').value;
+    if(!total) { toast('Sawda summasın kiritiń'); return; }
+
+    const items = [];
+    document.querySelectorAll('[id^="si-"]').forEach(row => {
+      const sel   = row.querySelector('select');
+      const qty   = row.querySelector('[id^="si-qty"]');
+      const price = row.querySelector('[id^="si-price"]');
+      if(!sel || !qty) return;
+      const opt = sel.options[sel.selectedIndex];
+      if(+qty.value > 0) {
+        items.push({
+          product_id: +sel.value || null,
+          name: opt.text.split(' (')[0],
+          quantity: +qty.value,
+          unit_price: +price.value || 0,
+          total: (+qty.value) * (+price.value || 0)
+        });
+      }
+    });
+
+    try {
+      await api('/api/sales/', { method:'POST', body: JSON.stringify({
+        store_id: storeId,
+        date: $('sale-date').value,
+        total_amount: +$('sale-total').value,
+        cash_amount: +$('sale-cash').value || 0,
+        card_amount: +$('sale-card').value || 0,
+        expenses: +$('sale-exp').value || 0,
+        customer_count: +$('sale-customers').value || 0,
+        note: $('sale-note').value,
+        items
+      })});
+      $('sale-msg').style.display = 'block';
+      setTimeout(() => { $('sale-msg').style.display='none'; navigate('dashboard'); }, 1500);
+      toast('Sawda saqlandı!');
+    } catch(e) { toast('Qátelik: '+e.message); }
+  }
+
+  // ──────────────────────────────────────────────
+  // STOCK
+  // ──────────────────────────────────────────────
+  async function stock() {
+    const products = await api(`/api/products/?store_id=${storeId}`);
+
+    $('content').innerHTML = `
+      <div class="card grid-full">
+        <div class="card-hdr">
+          <div class="card-title">Ónim qaldıǵı (${products.length} ta)</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm" onclick="$('product-modal').querySelector('#pm-id').value='';openModal('product-modal')">+ Ónim qosıw</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Ónim</th><th>Kategoriya</th><th>Muǵdarı</th><th>Min.</th><th>Satıw bahası</th><th>Jaǵday</th><th>Ámel</th>
+          </tr></thead>
+          <tbody>
+            ${products.map(p=>`
+            <tr>
+              <td><strong>${p.name}</strong></td>
+              <td class="text-muted">${p.category}</td>
+              <td class="input-mono"><strong>${p.quantity}</strong> ${p.unit}</td>
+              <td class="text-muted">${p.min_quantity} ${p.unit}</td>
+              <td class="input-mono">${fmt(p.sell_price)} sum</td>
+              <td>${p.is_low
+                ? '<span class="badge badge-danger">Kem!</span>'
+                : p.quantity <= p.min_quantity*2
+                  ? '<span class="badge badge-warn">Eskertiw</span>'
+                  : '<span class="badge badge-success">Jetkilikli</span>'}</td>
+              <td>
+                <button class="btn btn-sm" onclick="editProduct(${JSON.stringify(p).replace(/"/g,'&quot;')})">Ózgertiw</button>
+                <button class="btn btn-sm" onclick="adjustStock(${p.id},'${p.name}','${p.unit}')">Kirim</button>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        ${!products.length ? '<div class="empty-state">Házirshe ónim joq. "Ónim qosıw" túymesin basıń.</div>' : ''}
+      </div>`;
+  }
+
+  function editProduct(p) {
+    $('pm-id').value = p.id;
+    $('pm-name').value = p.name;
+    $('pm-cat').value = p.category;
+    $('pm-unit').value = p.unit;
+    $('pm-qty').value = p.quantity;
+    $('pm-min').value = p.min_quantity;
+    $('pm-buy').value = p.buy_price;
+    $('pm-sell').value = p.sell_price;
+    openModal('product-modal');
+  }
+
+  async function saveProduct() {
+    const id = $('pm-id').value;
+    const data = {
+      store_id: storeId,
+      name: $('pm-name').value.trim(),
+      category: $('pm-cat').value,
+      unit: $('pm-unit').value,
+      quantity: +$('pm-qty').value || 0,
+      min_quantity: +$('pm-min').value || 5,
+      buy_price: +$('pm-buy').value || 0,
+      sell_price: +$('pm-sell').value || 0
+    };
+    if(!data.name) { toast('Ónim atın kiritiń'); return; }
+    try {
+      if(id) {
+        await api(`/api/products/${id}`, {method:'PUT', body: JSON.stringify({
+          quantity: data.quantity, min_quantity: data.min_quantity,
+          buy_price: data.buy_price, sell_price: data.sell_price
+        })});
+      } else {
+        await api('/api/products/', {method:'POST', body: JSON.stringify(data)});
+      }
+      toast('Saqlandı!');
+      closeModal('product-modal');
+      await stock();
+    } catch(e) { toast('Qátelik: '+e.message); }
+  }
+
+  async function adjustStock(productId, name, unit) {
+    const qty = prompt(`${name} — qansha kirim qılıw kerek? (${unit})`);
+    if(qty === null || isNaN(+qty)) return;
+    try {
+      await api(`/api/products/${productId}/stock?quantity=${+qty}`, {method:'PATCH'});
+      toast(`${name}: +${qty} ${unit} qosıldı`);
+      await stock();
+    } catch(e) { toast('Qátelik: '+e.message); }
+  }
+
+  // ──────────────────────────────────────────────
+  // DEBT
+  // ──────────────────────────────────────────────
+  async function debt() {
+    const [summary, debts, history] = await Promise.all([
+      api(`/api/debts/summary?store_id=${storeId}`),
+      api(`/api/debts/?store_id=${storeId}`),
+      api(`/api/debts/history?store_id=${storeId}`).catch(() => [])
+    ]);
+
+    const mijoz    = debts.filter(d => d.debt_type === 'mijoz');
+    const supplier = debts.filter(d => d.debt_type === 'yetkazuvchi');
+    const totalAll = summary.total_mijoz + summary.total_supplier;
+    const totalPaid = history.reduce((s, d) => s + d.amount, 0);
+
+    // Faol qarz karta
+    function debtCard(d) {
+      const pct   = d.amount > 0 ? Math.round(d.paid_amount / d.amount * 100) : 0;
+      const color = d.is_overdue ? 'var(--danger)' : pct >= 50 ? '#1D9E75' : 'var(--accent)';
+      const safeName = d.person_name.replace(/'/g, '').replace(/"/g, '');
+      return `<div class="debt-row ${d.is_overdue ? 'overdue' : ''}" style="flex-direction:column;gap:8px;padding:12px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;">${d.person_name}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">
+              ${d.phone ? '<span>&#128222; ' + d.phone + '</span> &nbsp;|&nbsp; ' : ''}
+              Múddeti: <strong>${d.due_date || 'belgilenbegen'}</strong>
+              ${d.is_overdue ? ' &nbsp;<span style="color:var(--danger);font-weight:600;">&#9888; Múddeti ótken!</span>' : ''}
+            </div>
+            ${d.note ? '<div style="font-size:11px;color:var(--muted);margin-top:3px;font-style:italic;">&#128203; ' + d.note + '</div>' : ''}
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:16px;font-weight:700;color:${d.is_overdue ? 'var(--danger)' : 'var(--text)'};">
+              ${fmt(d.remaining)} sum
+            </div>
+            <div style="font-size:11px;color:var(--muted);">${pct}% tólengen</div>
+          </div>
+        </div>
+        <div style="background:var(--border);border-radius:4px;height:5px;">
+          <div style="width:${pct}%;background:${color};height:100%;border-radius:4px;transition:width .4s;"></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-sm" style="flex:1;background:var(--accent);color:#fff;border-color:var(--accent);"
+            onclick="payDebtModal(${d.id},'${safeName}',${d.remaining},${d.amount},${d.paid_amount})">
+            &#10004; Tólew
+          </button>
+          <button class="btn btn-sm" onclick="editDebtNote(${d.id})">&#9998; Túsindirme</button>
+          <button class="btn btn-sm" style="color:var(--danger);"
+            onclick="deleteDebt(${d.id},'${safeName}')">&#10005; Óshiriw</button>
+        </div>
+      </div>`;
+    }
+
+    // To'langan qarz karta
+    function paidCard(d) {
+      const typeLabel = d.debt_type === 'mijoz' ? 'Qarıydar' : 'Jetkerip beriwshi';
+      const icon      = d.debt_type === 'mijoz' ? '&#128100;' : '&#128666;';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;' +
+        'padding:11px 14px;background:var(--bg);border-radius:8px;' +
+        'border-left:3px solid #1D9E75;gap:12px;">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:13px;font-weight:600;">' + icon + ' ' + d.person_name + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' +
+            typeLabel +
+            (d.note ? ' &nbsp;|&nbsp; ' + d.note : '') +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:right;flex-shrink:0;">' +
+          '<div style="font-size:14px;font-weight:700;color:#1D9E75;">&#10003; ' + fmt(d.amount) + ' sum</div>' +
+          '<button class="btn btn-sm" style="margin-top:4px;font-size:11px;" ' +
+            'onclick="deleteDebt(' + d.id + ',\'' + d.person_name.replace(/'/g,'') + '\')">' +
+            '&#10005; Óshiriw' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    $('content').innerHTML = `
+      <div class="metrics" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+        <div class="metric">
+          <div class="metric-label">Aktiv qarızlar</div>
+          <div class="metric-value">${fmtM(totalAll)}</div>
+          <div class="metric-change text-muted">${summary.total_count} ta aktiv</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Bizge qarızdarlar</div>
+          <div class="metric-value">${fmtM(summary.total_mijoz)}</div>
+          <div class="metric-change up">&#9650; ${mijoz.length} ta qarıydar</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Biz qarızdarmız</div>
+          <div class="metric-value">${fmtM(summary.total_supplier)}</div>
+          <div class="metric-change down">&#9660; ${supplier.length} ta jetkerip beriwshi</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Múddeti ótken</div>
+          <div class="metric-value ${summary.overdue_count > 0 ? 'down' : ''}">${summary.overdue_count} ta</div>
+          <div class="metric-change ${summary.overdue_count > 0 ? 'down' : 'up'}">
+            ${summary.overdue_count > 0 ? '&#9660; Tezlik penen!' : '&#10003; Hámmesi waqtında'}
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:3px;
+        width:fit-content;margin-bottom:14px;" id="debt-tabs">
+        <button id="tab-active" onclick="showDebtTab('active')"
+          style="padding:6px 16px;border-radius:6px;border:1px solid var(--border);
+          background:var(--surface);font-size:13px;font-weight:500;cursor:pointer;
+          font-family:inherit;color:var(--text);">
+          Aktiv (${debts.length})
+        </button>
+        <button id="tab-paid" onclick="showDebtTab('paid')"
+          style="padding:6px 16px;border-radius:6px;border:none;background:none;
+          font-size:13px;cursor:pointer;font-family:inherit;color:var(--muted);">
+          Tólengen (${history.length})
+        </button>
+        <button id="tab-monitor" onclick="showDebtTab('monitor')"
+          style="padding:6px 16px;border-radius:6px;border:none;background:none;
+          font-size:13px;cursor:pointer;font-family:inherit;color:var(--muted);">
+          &#128200; Monitoring
+        </button>
+      </div>
+
+      <div id="tab-content-active">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-hdr">
+              <div class="card-title">Qarıydar qarızları (${mijoz.length})</div>
+              <button class="btn btn-sm btn-primary" onclick="openDebtModal('mijoz')">+ Qarız qosıw</button>
+            </div>
+            <div class="debt-list" style="gap:8px;max-height:500px;overflow-y:auto;">
+              ${mijoz.length
+                ? mijoz.map(d => debtCard(d)).join('')
+                : '<div class="empty-state" style="padding:32px;">&#10003; Aktiv qarıydar qarızı joq</div>'}
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr">
+              <div class="card-title">Jetkerip beriwshi qarızları (${supplier.length})</div>
+              <button class="btn btn-sm btn-primary" onclick="openDebtModal('yetkazuvchi')">+ Qosıw</button>
+            </div>
+            <div class="debt-list" style="gap:8px;max-height:500px;overflow-y:auto;">
+              ${supplier.length
+                ? supplier.map(d => debtCard(d)).join('')
+                : '<div class="empty-state" style="padding:32px;">&#10003; Jetkerip beriwshi qarızı joq</div>'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-content-paid" style="display:none;">
+        <div class="metrics" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px;">
+          <div class="metric">
+            <div class="metric-label">Jámi tólengen</div>
+            <div class="metric-value" style="color:#1D9E75;">${fmtM(totalPaid)}</div>
+            <div class="metric-change up">&#10003; ${history.length} ta qarız</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Qarıydarlardan</div>
+            <div class="metric-value">${fmtM(history.filter(d=>d.debt_type==='mijoz').reduce((s,d)=>s+d.amount,0))}</div>
+            <div class="metric-change text-muted">${history.filter(d=>d.debt_type==='mijoz').length} ta</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Jetkerip beriwshilerge</div>
+            <div class="metric-value">${fmtM(history.filter(d=>d.debt_type==='yetkazuvchi').reduce((s,d)=>s+d.amount,0))}</div>
+            <div class="metric-change text-muted">${history.filter(d=>d.debt_type==='yetkazuvchi').length} ta</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Tólengen qarızlar tariyxı</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input id="paid-search" placeholder="Izlew..." class="input" style="width:160px;padding:5px 10px;font-size:12px;"
+                oninput="filterPaid(this.value)">
+              <select id="paid-filter" class="input" style="width:130px;padding:5px 8px;font-size:12px;"
+                onchange="filterPaid(document.getElementById('paid-search').value)">
+                <option value="">Hámmesi</option>
+                <option value="mijoz">Qarıydarlar</option>
+                <option value="yetkazuvchi">Jetkerip beriwshiler</option>
+              </select>
+            </div>
+          </div>
+          <div id="paid-list" style="display:flex;flex-direction:column;gap:8px;">
+            ${history.length
+              ? history.map(d => paidCard(d)).join('')
+              : '<div class="empty-state" style="padding:40px;">Házirshe tólengen qarız joq</div>'}
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-content-monitor" style="display:none;">
+        <div class="grid-2" style="margin-bottom:14px;">
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">Qarız jaǵdayı</div></div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;">Jámi qarız</span>
+                <strong>${fmtM(totalAll)} sum</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;">Tólendi (tariyxı)</span>
+                <strong style="color:#1D9E75;">${fmtM(totalPaid)} sum</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;">Múddeti ótken</span>
+                <strong style="color:var(--danger);">${fmtM(debts.filter(d=>d.is_overdue).reduce((s,d)=>s+d.remaining,0))} sum</strong>
+              </div>
+              <div style="background:var(--border);border-radius:6px;height:8px;margin-top:4px;">
+                <div style="width:${totalAll+totalPaid>0?Math.round(totalPaid/(totalAll+totalPaid)*100):0}%;
+                  background:#1D9E75;height:100%;border-radius:6px;"></div>
+              </div>
+              <div style="font-size:11px;color:var(--muted);text-align:center;">
+                ${totalAll+totalPaid>0?Math.round(totalPaid/(totalAll+totalPaid)*100):0}% tólengen
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">Múddetke qaray</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              ${[
+                ['Múddeti ótken', debts.filter(d=>d.is_overdue), 'var(--danger)'],
+                ['3 kún ishinde', debts.filter(d=>{
+                  if(!d.due_date||d.is_overdue) return false;
+                  const days = (new Date(d.due_date)-new Date())/(1000*60*60*24);
+                  return days>=0 && days<=3;
+                }), 'var(--warn)'],
+                ['7 kún ishinde', debts.filter(d=>{
+                  if(!d.due_date||d.is_overdue) return false;
+                  const days = (new Date(d.due_date)-new Date())/(1000*60*60*24);
+                  return days>3 && days<=7;
+                }), '#1D9E75'],
+                ['Keyinrek', debts.filter(d=>!d.due_date||(()=>{
+                  const days=(new Date(d.due_date)-new Date())/(1000*60*60*24);
+                  return days>7;
+                })()), 'var(--muted)'],
+              ].map(([label, arr, color]) =>
+                '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg);border-radius:6px;">' +
+                '<div style="display:flex;align-items:center;gap:8px;">' +
+                '<div style="width:8px;height:8px;border-radius:50%;background:' + color + ';flex-shrink:0;"></div>' +
+                '<span style="font-size:13px;">' + label + '</span></div>' +
+                '<div style="text-align:right;">' +
+                '<strong style="font-size:13px;">' + arr.length + ' ta</strong>' +
+                '<div style="font-size:11px;color:var(--muted);">' + fmtM(arr.reduce((s,d)=>s+d.remaining,0)) + ' sum</div>' +
+                '</div></div>'
+              ).join('')}
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Eń kóp qarızdarlar</div>
+            <span class="badge badge-danger">${debts.length} ta aktiv</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${[...debts].sort((a,b) => b.remaining - a.remaining).slice(0,8).map((d, i) => {
+              const maxR = Math.max(...debts.map(x=>x.remaining), 1);
+              return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border-radius:6px;">' +
+                '<div style="font-size:12px;color:var(--muted);width:16px;">' + (i+1) + '</div>' +
+                '<div style="flex:1;min-width:0;">' +
+                '<div style="font-size:13px;font-weight:500;">' + d.person_name + '</div>' +
+                '<div style="background:var(--border);border-radius:3px;height:3px;margin-top:4px;">' +
+                '<div style="width:' + Math.round(d.remaining/maxR*100) + '%;background:' +
+                (d.is_overdue?'var(--danger)':'var(--accent)') + ';height:100%;border-radius:3px;"></div></div>' +
+                '</div>' +
+                '<div style="text-align:right;flex-shrink:0;">' +
+                '<div style="font-size:13px;font-weight:600;">' + fmtM(d.remaining) + ' sum</div>' +
+                '<div style="font-size:10px;color:' + (d.is_overdue?'var(--danger)':'var(--muted)') + ';">' +
+                (d.is_overdue ? '&#9888; Múddeti ótken' : 'Múddeti: ' + (d.due_date||'—')) + '</div>' +
+                '</div></div>';
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-bg" id="pay-modal">
+        <div class="modal" style="width:360px;">
+          <div class="modal-title" id="pay-modal-title">Tólew kiritiw</div>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+              <span>Qalǵan qarız:</span>
+              <strong id="pay-remaining" style="color:var(--danger);"></strong>
+            </div>
+            <div style="background:var(--border);border-radius:4px;height:6px;">
+              <div id="pay-bar" style="height:100%;border-radius:4px;background:var(--accent);
+                transition:width .3s;width:0%;"></div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="label">Tólew summası (sum)</label>
+            <input class="input input-mono" id="pay-amount" type="number" placeholder="0"
+              oninput="updatePayBar()">
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:14px;">
+            <button class="btn btn-sm" style="flex:1;" onclick="setPayAmount(0.25)">25%</button>
+            <button class="btn btn-sm" style="flex:1;" onclick="setPayAmount(0.5)">50%</button>
+            <button class="btn btn-sm" style="flex:1;" onclick="setPayAmount(1)">Tolıq</button>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" onclick="closeModal('pay-modal')">Biykarlaw</button>
+            <button class="btn btn-primary" onclick="confirmPay()">Saqlaw</button>
+          </div>
+        </div>
+      </div>`;
+
+    await updateDebtBadge();
+  }
+
+
+  function filterPaid(search) {
+    const type   = document.getElementById('paid-filter')?.value || '';
+    const q      = (search || '').toLowerCase();
+    const cards  = document.querySelectorAll('#paid-list > div');
+    let visible  = 0;
+    cards.forEach(card => {
+      const text = card.textContent.toLowerCase();
+      const matchQ    = !q    || text.includes(q);
+      const matchType = !type || card.innerHTML.includes(type === 'mijoz' ? '&#128100;' : '&#128666;');
+      card.style.display = (matchQ && matchType) ? '' : 'none';
+      if (matchQ && matchType) visible++;
+    });
+    const empty = document.getElementById('paid-empty');
+    if (empty) empty.style.display = visible === 0 ? '' : 'none';
+  }
+
+  function showDebtTab(tab) {
+    ['active','paid','monitor'].forEach(t => {
+      const btn = document.getElementById('tab-' + t);
+      const content = document.getElementById('tab-content-' + t);
+      if (!btn || !content) return;
+      const active = t === tab;
+      btn.style.background     = active ? 'var(--surface)' : 'none';
+      btn.style.border         = active ? '1px solid var(--border)' : 'none';
+      btn.style.color          = active ? 'var(--text)' : 'var(--muted)';
+      btn.style.fontWeight     = active ? '500' : '400';
+      content.style.display    = active ? 'block' : 'none';
+    });
+  }
+
+  let _payId = null, _payRem = 0, _payTotal = 0, _payAlready = 0;
+
+  function openDebtModal(type) {
+    if ($('d-type')) $('d-type').value = type;
+    openModal('debt-modal');
+  }
+
+  function payDebtModal(id, name, remaining, total, already) {
+    _payId = id; _payRem = remaining; _payTotal = total; _payAlready = already;
+    $('pay-modal-title').textContent = name + ' — tólew';
+    $('pay-remaining').textContent = fmt(remaining) + ' sum';
+    $('pay-amount').value = '';
+    $('pay-bar').style.width = Math.round(already / total * 100) + '%';
+    openModal('pay-modal');
+    setTimeout(() => $('pay-amount') && $('pay-amount').focus(), 120);
+  }
+
+  function setPayAmount(pct) {
+    $('pay-amount').value = Math.round(_payRem * pct);
+    updatePayBar();
+  }
+
+  function updatePayBar() {
+    const paid = +$('pay-amount').value || 0;
+    const pct  = Math.min(100, Math.round((_payAlready + paid) / _payTotal * 100));
+    if ($('pay-bar')) $('pay-bar').style.width = pct + '%';
+  }
+
+  async function confirmPay() {
+    const paid = +$('pay-amount').value;
+    if (!paid || paid <= 0)    { toast('Summa kiritiń'); return; }
+    if (paid > _payRem + 1)    { toast('Qalǵan qarızdan kóp!'); return; }
+    try {
+      await api('/api/debts/' + _payId + '/pay', {
+        method: 'PATCH',
+        body: JSON.stringify({ paid_amount: paid })
+      });
+      toast('Tólew saqlandı!');
+      closeModal('pay-modal');
+      await debt();
+    } catch(e) { toast('Qátelik: ' + e.message); }
+  }
+
+  async function deleteDebt(id, name) {
+    if (!confirm(name + ' — qarızdı óshiriwdi tastıyıqlaysızba?')) return;
+    try {
+      await api('/api/debts/' + id, { method: 'DELETE' });
+      toast('Óshirildi');
+      await debt();
+    } catch(e) { toast('Qátelik: ' + e.message); }
+  }
+
+  async function editDebtNote(id) {
+    const note = prompt('Túsindirme jazıń:');
+    if (note === null) return;
+    try {
+      await api('/api/debts/' + id + '/note', {
+        method: 'PATCH',
+        body: JSON.stringify({ note })
+      });
+      toast('Túsindirme saqlandı!');
+      await debt();
+    } catch(e) { toast('Túsindirme saqlanbadı'); }
+  }
+
+
+  async function saveDebt() {
+    const name   = $('d-name').value.trim();
+    const amount = +$('d-amount').value;
+    if (!name)            { toast('Atın kiritiń'); return; }
+    if (!amount || amount <= 0) { toast('Tuwrı summa kiritiń'); return; }
+    try {
+      await api('/api/debts/', { method:'POST', body: JSON.stringify({
+        store_id:    storeId,
+        person_name: name,
+        phone:       $('d-phone').value,
+        debt_type:   $('d-type').value,
+        amount,
+        due_date:    $('d-due').value || null,
+        note:        $('d-note').value
+      })});
+      toast('Qarız saqlandı!');
+      closeModal('debt-modal');
+      ['d-name','d-phone','d-amount','d-due','d-note'].forEach(id => $(id).value = '');
+      await debt();
+    } catch(e) { toast('Qátelik: ' + e.message); }
+  }
+
+
+  // ──────────────────────────────────────────────
+  // SALES HISTORY
+  // ──────────────────────────────────────────────
+  async function salesHistory() {
+    const sales = await api(`/api/sales/?store_id=${storeId}&limit=60`);
+    const total = sales.reduce((s,r)=>s+r.total_amount,0);
+    const profit= sales.reduce((s,r)=>s+r.profit,0);
+
+    $('content').innerHTML = `
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Sawda tariyxı (${sales.length} ta jazıw)</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="text-sm text-muted">Jámi: <strong>${fmtM(total)}</strong> sum · Payda: <strong>${fmtM(profit)}</strong> sum</span>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Sáne</th><th>Ulıwma</th><th>Naq</th><th>Karta</th><th>Qárejet</th><th>Payda</th><th>Qarıydarlar</th><th></th></tr></thead>
+          <tbody>
+            ${sales.map(s=>`<tr>
+              <td>${new Date(s.date).toLocaleDateString('uz-UZ')}</td>
+              <td class="input-mono"><strong>${fmtM(s.total_amount)}</strong></td>
+              <td class="input-mono text-muted">${fmtM(s.cash_amount)}</td>
+              <td class="input-mono text-muted">${fmtM(s.card_amount)}</td>
+              <td class="input-mono text-muted">${fmtM(s.expenses)}</td>
+              <td class="input-mono ${s.profit>0?'up':'down'}">${fmtM(s.profit)}</td>
+              <td>${s.customer_count || '—'}</td>
+              <td><button class="btn btn-sm" onclick="deleteSale(${s.id})">✕</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        ${!sales.length ? '<div class="empty-state">Házirshe sawda jazılmaǵan</div>' : ''}
+      </div>`;
+  }
+
+  async function deleteSale(id) {
+    if(!confirm('Bul sawdanı óshiriwdi tastıyıqlaysızba?')) return;
+    try {
+      await api(`/api/sales/${id}`, {method:'DELETE'});
+      toast('Óshirildi');
+      await salesHistory();
+    } catch(e) { toast('Qátelik: '+e.message); }
+  }
+
+  // ──────────────────────────────────────────────
+  // ANALYTICS
+  // ──────────────────────────────────────────────
+  async function analytics() {
+    // ai-insights tugma bosilganda yuklanadi — avtomatik EMAS
+    const [top, slow, wd, hourly] = await Promise.all([
+      api(`/api/analytics/top-products?store_id=${storeId}&limit=10`),
+      api(`/api/analytics/slow-products?store_id=${storeId}`),
+      api(`/api/analytics/by-weekday?store_id=${storeId}`),
+      api(`/api/analytics/hourly?store_id=${storeId}`)
+    ]);
+
+    $('content').innerHTML = `
+      <div class="grid-2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">Hápte kúnleri boyınsha ortasha sawda</div></div>
+          <div class="chart-wrap"><canvas id="chart-wd" role="img" aria-label="Hápte kúnleri">Kúnlik.</canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">Saatlıq sawda bólistiriliwi</div></div>
+          <div class="chart-wrap"><canvas id="chart-hr" role="img" aria-label="Saatlıq">Saatlıq.</canvas></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">Top 10 ónim</div><span class="badge badge-success">Dáramat boyınsha</span></div>
+          <div class="prod-list">
+            ${top.map((p,i)=>`<div class="prod-row">
+              <div class="prod-rank">${i+1}</div>
+              <div class="prod-name">${p.name}</div>
+              <div class="prod-bar-w" style="width:90px;"><div class="prod-bar" style="width:${Math.round(p.revenue/Math.max(...top.map(x=>x.revenue))*100)}%;background:#1a5fb4"></div></div>
+              <div class="prod-val">${fmtM(p.revenue)} sum</div>
+            </div>`).join('')}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">AI Usınısları</div>
+            <span class="badge" style="background:linear-gradient(135deg,rgba(201,151,58,.15),rgba(201,151,58,.05));color:#8a6520;border:1px solid rgba(201,151,58,.25);">Gemini</span>
+          </div>
+          <div id="analytics-ai-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;gap:10px;">
+            <div style="font-size:13px;color:var(--muted);text-align:center;">Tolıq AI tahlili ushın basıń</div>
+            <button onclick="loadAnalyticsAI()" id="analytics-ai-btn"
+              style="padding:8px 18px;background:linear-gradient(135deg,#c9973a,#a87828);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 3px 12px rgba(201,151,58,.3);">
+              ◈ AI tahlil qılsın
+            </button>
+            <div style="font-size:11px;color:var(--muted);">1 soraw jumsaladı</div>
+          </div>
+        </div>
+      </div>`;
+
+    charts.wd = new Chart($('chart-wd'), {
+      type:'bar',
+      data:{ labels: wd.map(r=>r.day.substring(0,3)), datasets:[{data:wd.map(r=>r.avg),backgroundColor:'#c8d9f5',borderColor:'#1a5fb4',borderWidth:1.5,borderRadius:4}] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>fmtM(v),font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{font:{size:10}},grid:{display:false}}} }
+    });
+    charts.hr = new Chart($('chart-hr'), {
+      type:'line',
+      data:{ labels: hourly.map(r=>r.hour+':00'), datasets:[{data:hourly.map(r=>r.amount),fill:true,backgroundColor:'rgba(26,95,180,0.07)',borderColor:'#1a5fb4',borderWidth:2,tension:0.4,pointRadius:0}] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>fmtM(v),font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{maxTicksLimit:8,font:{size:10}},grid:{display:false}}} }
+    });
+  }
+
+  // ──────────────────────────────────────────────
+  // FORECAST
+  // ──────────────────────────────────────────────
+  async function forecast() {
+    const data = await api(`/api/forecast/sales?store_id=${storeId}&days=30`);
+    const { historical, forecast: fc, summary } = data;
+
+    $('content').innerHTML = `
+      <div class="metrics" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+        <div class="metric">
+          <div class="metric-label">Kelesi hápte (boljaw)</div>
+          <div class="metric-value">${fmtM(summary.weekly_predicted)}</div>
+          <div class="metric-change up">AI prognozi</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Kelesi ay (boljaw)</div>
+          <div class="metric-value">${fmtM(summary.monthly_predicted)}</div>
+          <div class="metric-change up">AI prognozi</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Model anıqlıǵı</div>
+          <div class="metric-value">${summary.accuracy_pct}%</div>
+          <div class="metric-change up">Isenimlilik dárejesi</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Eń joqarı kún</div>
+          <div class="metric-value">${summary.best_day ? new Date(summary.best_day).toLocaleDateString('uz-UZ',{day:'numeric',month:'short'}) : '—'}</div>
+          <div class="metric-change up">Rejelestirilgen</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Sawda prognozi (aqırǵı 30 kún + kelesi 30 kún)</div>
+          <div style="display:flex;gap:12px;font-size:11px;align-items:center;">
+            <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:2px;background:#1a5fb4;display:inline-block;"></span> Haqıyqıy</span>
+            <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:2px;background:#2d7d46;display:inline-block;border-top:2px dashed #2d7d46;"></span> Prognoz</span>
+          </div>
+        </div>
+        <div class="chart-wrap-tall"><canvas id="chart-fc" role="img" aria-label="Prognoz grafigi">Sawda prognozi.</canvas></div>
+      </div>`;
+
+    const allLabels = [
+      ...historical.map(r => new Date(r.date).toLocaleDateString('uz-UZ',{day:'numeric',month:'short'})),
+      ...fc.map(r => new Date(r.date).toLocaleDateString('uz-UZ',{day:'numeric',month:'short'}))
+    ];
+    const actualData  = [...historical.map(r=>r.actual), ...fc.map(()=>null)];
+    const forecastData= [...historical.map(()=>null), ...fc.map(r=>r.predicted)];
+
+    charts.fc = new Chart($('chart-fc'), {
+      type:'line',
+      data:{ labels: allLabels, datasets:[
+        { label:'Haqıyqıy', data:actualData, borderColor:'#1a5fb4', borderWidth:2, pointRadius:0, tension:0.3, spanGaps:false },
+        { label:'Prognoz', data:forecastData, borderColor:'#2d7d46', borderWidth:2, borderDash:[6,3], pointRadius:0, tension:0.3, fill:true, backgroundColor:'rgba(45,125,70,0.05)', spanGaps:false }
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+        plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmtM(c.raw||0)} sum`}} },
+        scales:{ y:{ticks:{callback:v=>fmtM(v),font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},
+                 x:{ticks:{maxTicksLimit:12,font:{size:10}},grid:{display:false}} } }
+    });
+  }
+
+  // ──────────────────────────────────────────────
+  // UPLOAD
+  // ──────────────────────────────────────────────
+  async function upload() {
+    $('content').innerHTML = `
+      <div style="max-width:600px;">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-hdr"><div class="card-title">Sawda maǵlıwmatların júklew (CSV)</div></div>
+          <div class="upload-zone" id="sales-drop" onclick="$('sales-file').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event,'sales')">
+            <div style="font-size:28px;margin-bottom:8px;">⇧</div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Sawda CSV faylın júkleń</div>
+            <div style="font-size:12px;color:var(--muted);">Baǵanalar: date, total, cash, card, expenses, customers</div>
+          </div>
+          <input type="file" id="sales-file" accept=".csv" style="display:none" onchange="uploadFile(this,'sales')">
+          <div id="sales-status" style="display:none;" class="text-sm"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <a href="/api/upload/template/sales" class="btn btn-sm">⬇ Shablon júklep alıw</a>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-hdr"><div class="card-title">Ónimler dizimin júklew (CSV)</div></div>
+          <div class="upload-zone" id="prod-drop" onclick="$('prod-file').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event,'products')">
+            <div style="font-size:28px;margin-bottom:8px;">⇧</div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Ónim CSV faylın júkleń</div>
+            <div style="font-size:12px;color:var(--muted);">Baǵanalar: name, category, unit, quantity, min_quantity, buy_price, sell_price</div>
+          </div>
+          <input type="file" id="prod-file" accept=".csv" style="display:none" onchange="uploadFile(this,'products')">
+          <div id="prod-status" style="display:none;" class="text-sm"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <a href="/api/upload/template/products" class="btn btn-sm">⬇ Shablon júklep alıw</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">Fayl talapları</div></div>
+          <table>
+            <thead><tr><th>Túr</th><th>Format</th><th>Májbúriy baǵanalar</th></tr></thead>
+            <tbody>
+              <tr><td>Sawda</td><td>CSV</td><td>date, total</td></tr>
+              <tr><td>Ónim</td><td>CSV</td><td>name</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:12px;font-size:12px;color:var(--muted);">
+            Sáne formatı: YYYY-MM-DD (mısalı: 2025-04-15) yaki DD.MM.YYYY
+          </div>
+        </div>
+      </div>`;
+  }
+
+  async function uploadFile(input, type) {
+    const file = input.files[0];
+    if(!file) return;
+    const statusId = type==='sales' ? 'sales-status' : 'prod-status';
+    const el = $(statusId);
+    el.style.display='block';
+    el.textContent = 'Júklenmekte...';
+    el.style.color = 'var(--muted)';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    const endpoint = type==='sales'
+      ? `/api/upload/sales-csv?store_id=${storeId}`
+      : `/api/upload/products-csv?store_id=${storeId}`;
+
+    try {
+      const r = await fetch(endpoint, {method:'POST', body:formData});
+      const data = await r.json();
+      el.textContent = `✓ ${data.message}`;
+      el.style.color = 'var(--success)';
+      if(data.errors?.length) {
+        el.textContent += ` (${data.errors.length} ta qátelik)`;
+      }
+      toast(data.message);
+    } catch(e) {
+      el.textContent = 'Qátelik: '+e.message;
+      el.style.color = 'var(--danger)';
+    }
+  }
+
+  function handleDrop(event, type) {
+    event.preventDefault();
+    document.getElementById(type==='sales'?'sales-drop':'prod-drop').classList.remove('drag');
+    const file = event.dataTransfer.files[0];
+    if(!file) return;
+    const input = document.getElementById(type==='sales'?'sales-file':'prod-file');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    uploadFile(input, type);
+  }
+
+
+  // ══════════════════════════════════════════════
+  // AI PAGES
+  // ══════════════════════════════════════════════
+
+  function getAiKey() {
+    return localStorage.getItem('sb_ai_key') || '';
+  }
+
+  // ── AI CHAT ──────────────────────────────────
+  async function aiChat() {
+    const key = getAiKey();
+    $('content').innerHTML = `
+      <div style="display:flex;flex-direction:column;height:calc(100vh - 120px);max-width:760px;">
+        ${!key ? `<div style="padding:10px 14px;background:var(--warn-bg);color:var(--warn);border-radius:8px;font-size:13px;margin-bottom:14px;border:1px solid #f5d0a0;">
+          ⚠ API giliti sazlanbaǵan. <a href="#" onclick="navigate('ai-settings',document.querySelector('[data-page=ai-settings]'));return false;" style="color:var(--warn);font-weight:600;">Sazlamaǵa ótiń →</a>
+        </div>` : ''}
+        <div class="card" style="flex:1;display:flex;flex-direction:column;overflow:hidden;padding:0;">
+          <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+            <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#c9973a,#a87828);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0;">◈</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;">AI Járdemshi</div>
+              <div style="font-size:11px;color:var(--muted);">Gemini AI tárepinen</div>
+            </div>
+            <div style="margin-left:auto;" id="ai-status-dot" title="AI holati">
+              <div style="width:8px;height:8px;border-radius:50%;background:${key ? '#2d7d46' : '#e53e3e'};"></div>
+            </div>
+          </div>
+
+          <div id="chat-messages" style="flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px;">
+            <div class="msg-ai">
+              <div class="msg-bubble ai-bubble">Sálem! Men siziń biznes járdemshińizben. Sawda, ónimler, qarızlar yaki prognoz haqqında qálegen sorawıńızdı beriń.</div>
+            </div>
+          </div>
+
+          <div style="padding:14px 18px;border-top:1px solid var(--border);">
+            <div style="display:flex;gap:10px;align-items:flex-end;">
+              <div style="flex:1;position:relative;">
+                <textarea id="chat-input" placeholder="Dúkanıńız haqqında soraw beriń..."
+                  style="width:100%;padding:10px 14px;font-size:13px;font-family:inherit;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);resize:none;outline:none;max-height:100px;min-height:44px;line-height:1.5;transition:border-color .15s;"
+                  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"
+                  oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"
+                  onfocus="this.style.borderColor='var(--accent)'"
+                  onblur="this.style.borderColor='var(--border)'"></textarea>
+              </div>
+              <button onclick="sendChat()" id="send-btn"
+                style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#c9973a,#a87828);border:none;cursor:pointer;color:#fff;font-size:18px;flex-shrink:0;transition:opacity .15s;box-shadow:0 3px 14px rgba(201,151,58,.35);">↑</button>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;" id="quick-q">
+              ${['Búgingi sawda qanday?','Qaysı ónim kóp satıldı?','Qarız jaǵdayı qanday?','Kelesi hápte prognozi?'].map(q=>
+                `<button onclick="quickQ('${q}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg);cursor:pointer;color:var(--muted);transition:all .12s;font-family:inherit;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">${q}</button>`
+              ).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // inject chat bubble styles if not exists
+    if (!document.getElementById('chat-styles')) {
+      const s = document.createElement('style');
+      s.id = 'chat-styles';
+      s.textContent = `
+        .msg-ai { display:flex; justify-content:flex-start; }
+        .msg-user { display:flex; justify-content:flex-end; }
+        .msg-bubble { max-width:75%; padding:11px 15px; border-radius:14px; font-size:13px; line-height:1.6; }
+        .ai-bubble { background:var(--bg); border:1px solid var(--border); border-radius:14px 14px 14px 2px; color:var(--text); }
+        .user-bubble { background:linear-gradient(135deg,#c9973a,#a87828); color:#fff; border-radius:14px 14px 2px 14px; }
+        .typing-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--muted); margin:0 2px; animation:typingBounce 1.2s ease infinite; }
+        .typing-dot:nth-child(2){animation-delay:.2s;} .typing-dot:nth-child(3){animation-delay:.4s;}
+        @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+      `;
+      document.head.appendChild(s);
+    }
+  }
+
+  function quickQ(q) {
+    $('chat-input').value = q;
+    sendChat();
+  }
+
+  async function sendChat() {
+    const input = $('chat-input');
+    const q = input.value.trim();
+    if (!q) return;
+    const key = getAiKey();
+    if (!key) { toast('API giliti sazlanbaǵan. AI Sazlama ǵa ótiń.'); navigate('ai-settings', document.querySelector('[data-page=ai-settings]')); return; }
+
+    input.value = ''; input.style.height = '44px';
+    const msgs = $('chat-messages');
+
+    // User bubble
+    msgs.innerHTML += `<div class="msg-user"><div class="msg-bubble user-bubble">${q}</div></div>`;
+
+    // Typing indicator
+    const typingId = 'typing-' + Date.now();
+    msgs.innerHTML += `<div class="msg-ai" id="${typingId}"><div class="msg-bubble ai-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div></div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+
+    $('send-btn').disabled = true;
+    try {
+      const res = await api('/api/ai/chat', {
+        method: 'POST',
+        body: JSON.stringify({ store_id: storeId, question: q, api_key: key })
+      });
+      document.getElementById(typingId)?.remove();
+      msgs.innerHTML += `<div class="msg-ai"><div class="msg-bubble ai-bubble">${res.answer.replace(/\n/g,'<br>')}</div></div>`;
+    } catch(e) {
+      document.getElementById(typingId)?.remove();
+      msgs.innerHTML += `<div class="msg-ai"><div class="msg-bubble ai-bubble" style="color:var(--danger);">Qátelik: ${e.message}</div></div>`;
+    } finally {
+      $('send-btn').disabled = false;
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+  }
+
+  // ── AI REPORT ────────────────────────────────
+  async function aiReport() {
+    const key = getAiKey();
+    $('content').innerHTML = `
+      <div style="max-width:700px;">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-hdr">
+            <div class="card-title">AI Aylıq Esabat</div>
+            <span class="badge badge-info" style="background:linear-gradient(135deg,rgba(201,151,58,.15),rgba(201,151,58,.05));color:#8a6520;border:1px solid rgba(201,151,58,.2);">Gemini AI</span>
+          </div>
+          ${!key ? `<div style="padding:12px;background:var(--warn-bg);border-radius:8px;font-size:13px;color:var(--warn);margin-bottom:14px;">
+            ⚠ API giliti kerek. <a href="#" onclick="navigate('ai-settings',document.querySelector('[data-page=ai-settings]'));return false;" style="color:var(--warn);font-weight:600;">Sazlaw →</a>
+          </div>` : ''}
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+            AI dúkanıńızdıń barlıq maǵlıwmatların tahlil qılıp, professional aylıq esabat tayarlaydı.
+            Dawam etiwshi tendenciyalar, qáwipler hám usınıslar kiritiledi.
+          </p>
+          <button class="btn btn-primary" onclick="generateReport()" id="report-btn"
+            style="background:linear-gradient(135deg,#c9973a,#a87828);border-color:transparent;box-shadow:0 4px 16px rgba(201,151,58,.3);">
+            ◑ Esabat jaratıw
+          </button>
+        </div>
+        <div id="report-result" style="display:none;" class="card">
+          <div class="card-hdr">
+            <div class="card-title" id="report-date"></div>
+            <button class="btn btn-sm" onclick="copyReport()">Nusqa alıw</button>
+          </div>
+          <div id="report-text" style="font-size:14px;line-height:1.8;color:var(--text);"></div>
+        </div>
+        <div id="report-loading" style="display:none;" class="card">
+          <div style="text-align:center;padding:40px;">
+            <div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:#c9973a;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+            <div style="font-size:14px;color:var(--muted);">AI esabat tayarlamaqta...</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  async function generateReport() {
+    const key = getAiKey();
+    if (!key) { toast('API giliti sazlanbaǵan.'); return; }
+
+    $('report-btn').disabled = true;
+    $('report-btn').textContent = 'Tayarlanmaqta...';
+    $('report-result').style.display = 'none';
+    $('report-loading').style.display = 'block';
+
+    try {
+      const res = await api('/api/ai/report', {
+        method: 'POST',
+        body: JSON.stringify({ store_id: storeId, api_key: key })
+      });
+      $('report-loading').style.display = 'none';
+      $('report-result').style.display = 'block';
+      $('report-date').textContent = new Date(res.generated_at).toLocaleDateString('uz-UZ', {year:'numeric',month:'long',day:'numeric'}) + ' — AI esabat';
+      // Markdown ni HTML ga aylantirish
+      const formatted = res.report
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/^### (.+)$/gm, '<h4 style="margin:12px 0 4px;font-size:14px;color:var(--text);">$1</h4>')
+        .replace(/^## (.+)$/gm, '<h3 style="margin:14px 0 6px;font-size:15px;">$1</h3>')
+        .replace(/^# (.+)$/gm, '<h2 style="margin:14px 0 6px;font-size:16px;">$1</h2>')
+        .replace(/\n/g, '<br>');
+      $('report-text').innerHTML = formatted;
+      toast('Esabat tayyar!');
+    } catch(e) {
+      $('report-loading').style.display = 'none';
+      toast('Qátelik: ' + e.message);
+    } finally {
+      $('report-btn').disabled = false;
+      $('report-btn').textContent = '◑ Esabat jaratıw';
+    }
+  }
+
+  function copyReport() {
+    const text = $('report-text').innerText;
+    navigator.clipboard.writeText(text).then(() => toast('Nusqa alındı!'));
+  }
+
+  // ── AI SETTINGS ──────────────────────────────
+  function aiSettings() {
+    const saved = getAiKey();
+    $('content').innerHTML = `
+      <div style="max-width:540px;">
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">AI Sazlamaları</div></div>
+
+          <div style="padding:14px;background:var(--accent-soft);border-radius:8px;margin-bottom:20px;border:1px solid rgba(26,95,180,.15);">
+            <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Gemini API gilitin qayaqtan alıw:</div>
+            <ol style="font-size:12px;color:var(--muted);line-height:2;padding-left:16px;">
+              <li><a href="https://aistudio.google.com" target="_blank" style="color:var(--accent);">aistudio.google.com</a> ǵa kiriń</li>
+              <li>"Get API key" túymesin basıń</li>
+              <li>"Create API key" → nusqa alıń</li>
+              <li>Tómenge jaylastırıń</li>
+            </ol>
+          </div>
+
+          <div class="form-group" style="margin-bottom:16px;">
+            <label class="label">Gemini API Giliti</label>
+            <div style="position:relative;">
+              <input class="input" id="ai-key-input" type="password" placeholder="AIzaSy..."
+                value="${saved}" style="padding-right:80px;font-family:'DM Mono',monospace;font-size:13px;">
+              <button onclick="toggleAiKeyVisibility()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);padding:4px 6px;" id="ai-key-toggle">Kórsetiw</button>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="saveAiKey()"
+              style="background:linear-gradient(135deg,#c9973a,#a87828);border-color:transparent;">
+              Saqlaw
+            </button>
+            <button class="btn" onclick="testAiKey()">Tekseriw</button>
+            ${saved ? '<button class="btn" onclick="clearAiKey()" style="color:var(--danger);">Óshiriw</button>' : ''}
+          </div>
+          <div id="key-status" style="margin-top:12px;font-size:13px;display:none;"></div>
+
+          <div class="divider" style="margin:20px 0;"></div>
+          <div style="font-size:12px;color:var(--muted);">
+            <strong>Qáwipsizlik:</strong> API giliti tek siziń brauzerińizde saqlanadı (localStorage).
+            Serverge jiberilmeydi. Hár sorawda tuwrıdan-tuwrı Gemini ǵa jiberiledi.
+          </div>
+        </div>
+
+        ${saved ? `
+        <div class="card" style="margin-top:14px;">
+          <div class="card-hdr"><div class="card-title">Tezkor sınaqlar</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${[
+              ['Búgingi sawda tahlili','Búgingi sawda nátiyjelerin bahalań hám másláhát beriń'],
+              ['Háptelik prognoz','Kelesi hápte sawdasın boljap beriń'],
+              ['Sklad optimizaciyası','Qaysı ónimler zapasın ózgertiw kerek?'],
+            ].map(([label, q]) => `
+            <button onclick="quickAiTest('${q}')" class="btn" style="text-align:left;justify-content:flex-start;">
+              → ${label}
+            </button>`).join('')}
+          </div>
+        </div>` : ''}
+      </div>`;
+  }
+
+  function toggleAiKeyVisibility() {
+    const inp = $('ai-key-input');
+    const btn = $('ai-key-toggle');
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Jasırıw'; }
+    else { inp.type = 'password'; btn.textContent = 'Kórsetiw'; }
+  }
+
+  function saveAiKey() {
+    const key = $('ai-key-input').value.trim();
+    if (!key) { toast('API giliti kerek'); return; }
+    localStorage.setItem('sb_ai_key', key);
+    $('ai-badge').style.display = 'block';
+    toast('API giliti saqlandı!');
+    aiSettings(); // refresh
+  }
+
+  function clearAiKey() {
+    localStorage.removeItem('sb_ai_key');
+    $('ai-badge').style.display = 'none';
+    toast('API giliti óshirildi');
+    aiSettings();
+  }
+
+  async function testAiKey() {
+    const key = $('ai-key-input').value.trim();
+    if (!key) { toast('Aldın gilit kiritiń'); return; }
+    const status = $('key-status');
+    status.style.display = 'block';
+    status.style.color = 'var(--muted)';
+    status.textContent = 'Tekserilmekte...';
+    try {
+      const res = await fetch('/api/ai/validate-key', {
+        method:'POST', headers:{'Content-Type':'application/json', 'Authorization':'Bearer '+localStorage.getItem('sb_token')},
+        body: JSON.stringify({api_key: key})
+      });
+      const data = await res.json();
+      if (data.valid) {
+        status.style.color = 'var(--success)';
+        status.textContent = '✓ API giliti islep atır! Gemini tayyar.';
+      } else {
+        status.style.color = 'var(--danger)';
+        status.textContent = '✗ Gilit nadurıs: ' + (data.error || 'Qátelik');
+      }
+    } catch(e) {
+      status.style.color = 'var(--danger)';
+      status.textContent = 'Qátelik: ' + e.message;
+    }
+  }
+
+  async function quickAiTest(q) {
+    navigate('ai-chat', document.querySelector('[data-page=ai-chat]'));
+    setTimeout(() => {
+      if ($('chat-input')) { $('chat-input').value = q; sendChat(); }
+    }, 300);
+  }
+
+  // Init ai badge
+  if (getAiKey()) {
+    const b = document.getElementById('ai-badge');
+    if (b) b.style.display = 'block';
+  }
+
+
+  // ══════════════════════════════════════════════
+  // AI ON-DEMAND FUNKSIYALAR
+  // Faqat tugma bosilganda chaqiriladi — limit tejaydi!
+  // ══════════════════════════════════════════════
+
+  // Dashboard dagi "AI tahlil qilsin" tugmasi
+  async function loadDashAI() {
+    const key = getAiKey();
+    const btn = document.getElementById('dash-ai-btn');
+    const box = document.getElementById('dash-ai-content');
+    if (!key) {
+      box.innerHTML = `<div style="font-size:13px;color:var(--warn);text-align:center;padding:8px;">
+        ⚠ API giliti sazlanbaǵan.<br>
+        <a href="#" onclick="navigate('ai-settings',document.querySelector('[data-page=ai-settings]'));return false;"
+           style="color:var(--warn);font-weight:600;">AI Sazlama →</a>
+      </div>`;
+      return;
+    }
+    // Loading
+    box.innerHTML = `<div style="text-align:center;padding:20px;">
+      <div style="width:28px;height:28px;border:2.5px solid rgba(201,151,58,.2);border-top-color:#c9973a;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px;"></div>
+      <div style="font-size:12px;color:var(--muted);">Gemini tahlil qılmaqta...</div>
+    </div>`;
+    try {
+      const res = await api('/api/ai/quick-insights', {
+        method: 'POST',
+        body: JSON.stringify({ store_id: storeId, api_key: key })
+      });
+      const colors = ['success','info','warning'];
+      const _tips_html = res.tips.map((tip, ix) =>
+        '<div class="ai-tip ' + (colors[ix]||'info') + '">' +
+        '<div class="ai-tip-body"><div class="ai-tip-text">' + tip + '</div></div></div>'
+      ).join('');
+      box.innerHTML = '<div class="ai-list" style="width:100%;">' + _tips_html + '</div>' +
+        '<button onclick="loadDashAI()" style="margin-top:8px;font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;">&#8634; Jańalaw</button>';
+    } catch(e) {
+      box.innerHTML = `<div style="font-size:12px;color:var(--danger);text-align:center;padding:12px;">${e.message}<br>
+        <button onclick="loadDashAI()" style="margin-top:6px;font-size:11px;background:none;border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;">Qaytadan urınıp kóriw</button>
+      </div>`;
+    }
+  }
+
+  // Analytics sahifasidagi "AI tahlil qilsin" tugmasi
+  async function loadAnalyticsAI() {
+    const key = getAiKey();
+    const box = document.getElementById('analytics-ai-content');
+    if (!key) {
+      box.innerHTML = `<div style="font-size:13px;color:var(--warn);text-align:center;padding:8px;">
+        ⚠ <a href="#" onclick="navigate('ai-settings',document.querySelector('[data-page=ai-settings]'));return false;" style="color:var(--warn);font-weight:600;">API giliti kerek →</a>
+      </div>`;
+      return;
+    }
+    box.innerHTML = `<div style="text-align:center;padding:20px;">
+      <div style="width:28px;height:28px;border:2.5px solid rgba(201,151,58,.2);border-top-color:#c9973a;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px;"></div>
+      <div style="font-size:12px;color:var(--muted);">Gemini tolıq tahlil qılmaqta...</div>
+    </div>`;
+    try {
+      const res = await api('/api/ai/quick-insights', {
+        method: 'POST',
+        body: JSON.stringify({ store_id: storeId, api_key: key })
+      });
+      const colors = ['success','info','warning'];
+      const _tips_html = res.tips.map((tip, ix) =>
+        '<div class="ai-tip ' + (colors[ix]||'info') + '">' +
+        '<div class="ai-tip-body"><div class="ai-tip-text">' + tip + '</div></div></div>'
+      ).join('');
+      box.innerHTML = '<div class="ai-list" style="width:100%;">' + _tips_html + '</div>' +
+        '<button onclick="loadAnalyticsAI()" style="margin-top:8px;font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;">&#8634; Jańalaw</button>';
+    } catch(e) {
+      box.innerHTML = `<div style="font-size:12px;color:var(--danger);text-align:center;padding:12px;">${e.message}<br>
+        <button onclick="loadAnalyticsAI()" style="margin-top:6px;font-size:11px;background:none;border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;">Qaytadan urınıp kóriw</button>
+      </div>`;
+    }
+  }
+
+  // ── START ──
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="qq">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBiz AI — Kiriw</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:      #0d0d0d;
+      --ink-2:    #3a3a3a;
+      --ink-3:    #767676;
+      --paper:    #fafaf8;
+      --surface:  #ffffff;
+      --gold:     #c9973a;
+      --gold-lt:  #f0d898;
+      --gold-dk:  #8a6520;
+      --border:   rgba(0,0,0,0.09);
+      --shadow:   0 2px 40px rgba(0,0,0,0.10);
+      --r:        14px;
+      font-family: 'Sora', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--paper);
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── Left panel ─────────────────────────────────── */
+    .left {
+      width: 46%;
+      min-height: 100vh;
+      background: var(--ink);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px;
+    }
+
+    /* Animated grid bg */
+    .left::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(201,151,58,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,151,58,.06) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridShift 20s linear infinite;
+    }
+    @keyframes gridShift {
+      0%   { background-position: 0 0; }
+      100% { background-position: 40px 40px; }
+    }
+
+    /* Glowing orbs */
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); pointer-events: none;
+    }
+    .orb-1 {
+      width: 340px; height: 340px;
+      background: radial-gradient(circle, rgba(201,151,58,.28), transparent 70%);
+      top: -80px; right: -60px;
+      animation: float1 8s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(201,151,58,.15), transparent 70%);
+      bottom: 80px; left: -40px;
+      animation: float2 11s ease-in-out infinite;
+    }
+    @keyframes float1 {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50%      { transform: translate(-20px, 30px) scale(1.08); }
+    }
+    @keyframes float2 {
+      0%,100% { transform: translate(0,0); }
+      50%      { transform: translate(15px, -20px); }
+    }
+
+    .left-brand {
+      position: relative; z-index: 2;
+    }
+    .left-logo {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 48px;
+    }
+    .left-logo-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dk));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #fff;
+      box-shadow: 0 4px 20px rgba(201,151,58,.4);
+    }
+    .left-logo-name {
+      font-size: 17px; font-weight: 700;
+      color: #fff; letter-spacing: -0.3px;
+    }
+
+    .left-headline {
+      font-size: 38px; font-weight: 700; line-height: 1.15;
+      color: #fff; letter-spacing: -1px;
+      margin-bottom: 20px;
+    }
+    .left-headline span {
+      background: linear-gradient(135deg, var(--gold-lt), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .left-desc {
+      font-size: 15px; color: rgba(255,255,255,.55);
+      line-height: 1.7; max-width: 320px;
+    }
+
+    /* Feature pills */
+    .features {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .feat {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px; padding: 12px 16px;
+      animation: featIn 0.5s ease both;
+    }
+    .feat:nth-child(1) { animation-delay: 0.1s; }
+    .feat:nth-child(2) { animation-delay: 0.2s; }
+    .feat:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes featIn {
+      from { opacity:0; transform: translateX(-16px); }
+      to   { opacity:1; transform: translateX(0); }
+    }
+    .feat-icon {
+      width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(201,151,58,.3), rgba(201,151,58,.1));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .feat-text { font-size: 13px; color: rgba(255,255,255,.75); font-weight: 400; }
+    .feat-text strong { color: #fff; font-weight: 600; }
+
+    /* ── Right panel ─────────────────────────────────── */
+    .right {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 32px;
+      position: relative;
+    }
+
+    /* Subtle noise texture */
+    .right::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; opacity: 0.4;
+    }
+
+    .card {
+      width: 100%; max-width: 420px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: var(--shadow);
+      position: relative;
+      animation: cardIn 0.45s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes cardIn {
+      from { opacity:0; transform: translateY(24px) scale(0.97); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    .card-title {
+      font-size: 24px; font-weight: 700;
+      color: var(--ink); letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+    .card-sub {
+      font-size: 14px; color: var(--ink-3);
+      margin-bottom: 28px;
+    }
+
+    /* ── Form ────────────────────────────────────────── */
+    .form-stack { display: flex; flex-direction: column; gap: 14px; }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field-label {
+      font-size: 12px; font-weight: 600;
+      color: var(--ink-2); letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .field-wrap { position: relative; }
+    .field-icon {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      font-size: 15px; color: var(--ink-3); pointer-events: none;
+      transition: color 0.2s;
+    }
+    .input {
+      width: 100%; padding: 11px 13px 11px 38px;
+      font-size: 14px; font-family: 'Sora', sans-serif;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: #fafaf8;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+    }
+    .input:focus {
+      border-color: var(--gold);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(201,151,58,.12);
+    }
+    .input:focus ~ .field-icon,
+    .field-wrap:focus-within .field-icon { color: var(--gold); }
+    .input.error { border-color: #e53e3e; }
+    .input.error:focus { box-shadow: 0 0 0 3px rgba(229,62,62,.12); }
+
+    /* select */
+    select.input { padding-left: 13px; cursor: pointer; }
+
+    /* Password toggle */
+    .pw-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; font-size: 15px;
+      color: var(--ink-3); transition: color 0.2s; padding: 4px;
+    }
+    .pw-toggle:hover { color: var(--ink); }
+
+    /* Error hint */
+    .field-err {
+      font-size: 11px; color: #e53e3e; font-weight: 500;
+      min-height: 14px; transition: opacity 0.2s;
+    }
+
+    /* 2-col grid */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* ── Submit button ───────────────────────────────── */
+    .btn-submit {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #c9973a, #a87828);
+      color: #fff; font-size: 15px; font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      border: none; border-radius: 10px; cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 20px rgba(201,151,58,.35);
+      margin-top: 4px;
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(201,151,58,.45);
+    }
+    .btn-submit:active:not(:disabled) { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    /* Shimmer on button */
+    .btn-submit::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.22) 50%, transparent 100%);
+      transform: translateX(-100%);
+      transition: transform 0.5s;
+    }
+    .btn-submit:hover::after { transform: translateX(100%); }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.35);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.7s linear infinite; margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Divider ─────────────────────────────────────── */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--ink-3); font-size: 12px; margin: 4px 0;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Switch link ─────────────────────────────────── */
+    .switch-link {
+      text-align: center; font-size: 13px; color: var(--ink-3);
+    }
+    .switch-link a {
+      color: var(--gold-dk); font-weight: 600; text-decoration: none;
+      transition: color 0.15s;
+    }
+    .switch-link a:hover { color: var(--gold); }
+
+    /* ── Alert ───────────────────────────────────────── */
+    .alert {
+      padding: 11px 14px; border-radius: 9px;
+      font-size: 13px; font-weight: 500;
+      animation: alertIn 0.25s ease; display: none;
+    }
+    .alert.show { display: block; }
+    .alert.err  { background: #fef2f2; color: #c53030; border: 1px solid #fed7d7; }
+    .alert.ok   { background: #f0fff4; color: #276749; border: 1px solid #c6f6d5; }
+    @keyframes alertIn {
+      from { opacity:0; transform: translateY(-6px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 700px) {
+      .left { display: none; }
+      .right { padding: 24px 16px; }
+      .card { padding: 28px 22px; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Tab switcher ────────────────────────────────── */
+    .tabs {
+      display: flex; background: #f3f2ee; border-radius: 10px;
+      padding: 4px; gap: 4px; margin-bottom: 24px;
+    }
+    .tab {
+      flex: 1; padding: 8px; text-align: center;
+      font-size: 13px; font-weight: 600; border-radius: 7px;
+      cursor: pointer; color: var(--ink-3); transition: all 0.2s;
+      border: none; background: none; font-family: 'Sora', sans-serif;
+    }
+    .tab.active {
+      background: #fff; color: var(--ink);
+      box-shadow: 0 1px 6px rgba(0,0,0,.10);
+    }
+  </style>
+</head>
+<body>
+
+<div class="left">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="left-brand">
+    <div class="left-logo">
+      <div class="left-logo-icon">◈</div>
+      <div class="left-logo-name">SmartBiz AI</div>
+    </div>
+    <div class="left-headline">
+      Biznesińizdi<br><span>aqıllı</span> basqarıń
+    </div>
+    <div class="left-desc">
+      Dúkan, restoran yaki filialińızdı real waqıtta baqlap barıń.
+      AI tahlil, prognoz hám qarız dápteri — hámmesi bir jerde.
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feat">
+      <div class="feat-icon">◑</div>
+      <div class="feat-text"><strong>AI tahlil</strong> — sawda tendenciyası hám másláhátler</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">↗</div>
+      <div class="feat-text"><strong>30 kúnlik prognoz</strong> — ML modeli tiykarında</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">◈</div>
+      <div class="feat-text"><strong>Qarız dápteri</strong> — avtomatik eskertiwler</div>
+    </div>
+  </div>
+</div>
+
+<div class="right">
+  <div class="card">
+
+    <div class="tabs">
+      <button class="tab active" id="tab-login"    onclick="showTab('login')">Kiriw</button>
+      <button class="tab"        id="tab-register" onclick="showTab('register')">Dizim</button>
+    </div>
+
+    <div class="alert" id="alert"></div>
+
+    <div id="form-login">
+      <div class="card-title">Xosh keldińiz!</div>
+      <div class="card-sub">akkauntıńızǵa kiriń</div>
+      <div class="form-stack">
+        <div class="field">
+          <label class="field-label">Email mánzil</label>
+          <div class="field-wrap">
+            <span class="field-icon">✉</span>
+            <input class="input" id="l-email" type="email" placeholder="siziń@email.com" autocomplete="email">
+          </div>
+          <div class="field-err" id="l-email-err"></div>
+        </div>
+        <div class="field">
+          <label class="field-label">Parol</label>
+          <div class="field-wrap">
+            <span class="field-icon">🔒</span>
+            <input class="input" id="l-pw" type="password" placeholder="Parolińiz" autocomplete="current-password">
+            <button class="pw-toggle" type="button" onclick="togglePw('l-pw',this)">👁</button>
+          </div>
+          <div class="field-err" id="l-pw-err"></div>
+        </div>
+        <button class="btn-submit" id="btn-login" onclick="doLogin()">Kiriw</button>
+        <div class="switch-link">
+          Akkauntıńız joqpa? <a href="#" onclick="showTab('register');return false;">Dizimnen ótiń →</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="form-register" style="display:none">
+      <div class="card-title">Baslań!</div>
+      <div class="card-sub">Biypul akkaunt jaratıń</div>
+      <div class="form-stack">
+        <div class="field">
+          <label class="field-label">Tolıq atıńız</label>
+          <div class="field-wrap">
+            <span class="field-icon">◻</span>
+            <input class="input" id="r-name" type="text" placeholder="Atı Familiyası">
+          </div>
+          <div class="field-err" id="r-name-err"></div>
+        </div>
+        <div class="field">
+          <label class="field-label">Email mánzil</label>
+          <div class="field-wrap">
+            <span class="field-icon">✉</span>
+            <input class="input" id="r-email" type="email" placeholder="siziń@email.com">
+          </div>
+          <div class="field-err" id="r-email-err"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label class="field-label">Parol</label>
+            <div class="field-wrap">
+              <span class="field-icon">🔒</span>
+              <input class="input" id="r-pw" type="password" placeholder="Keminde 6 belgi">
+              <button class="pw-toggle" type="button" onclick="togglePw('r-pw',this)">👁</button>
+            </div>
+            <div class="field-err" id="r-pw-err"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">Tastıyıqlań</label>
+            <div class="field-wrap">
+              <span class="field-icon">🔒</span>
+              <input class="input" id="r-pw2" type="password" placeholder="Tákirarlań">
+            </div>
+            <div class="field-err" id="r-pw2-err"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Dúkan atı</label>
+          <div class="field-wrap">
+            <span class="field-icon">⊞</span>
+            <input class="input" id="r-store" type="text" placeholder="Mısalı: Tiykarǵı dúkan">
+          </div>
+          <div class="field-err" id="r-store-err"></div>
+        </div>
+        <div class="field">
+          <label class="field-label">Dúkan túri</label>
+          <select class="input" id="r-type" style="padding-left:13px;">
+            <option value="dokon">Dúkan</option>
+            <option value="restoran">Restoran</option>
+            <option value="filial">Filial</option>
+            <option value="ombor">Ammar</option>
+          </select>
+        </div>
+        <button class="btn-submit" id="btn-register" onclick="doRegister()">Akkaunt jaratıw</button>
+        <div class="switch-link">
+          Akkauntıńız barma? <a href="#" onclick="showTab('login');return false;">Kiriń →</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const API = '';
+
+  // ── If already logged in, go home ──
+  if (localStorage.getItem('sb_token')) {
+    window.location.replace('/');
+  }
+
+  // ── Tab switch ──
+  function showTab(tab) {
+    document.getElementById('form-login').style.display    = tab==='login'    ? '' : 'none';
+    document.getElementById('form-register').style.display = tab==='register' ? '' : 'none';
+    document.getElementById('tab-login').classList.toggle('active',    tab==='login');
+    document.getElementById('tab-register').classList.toggle('active', tab==='register');
+    hideAlert();
+    clearErrors();
+    // animate card
+    const card = document.querySelector('.card');
+    card.style.animation = 'none';
+    card.offsetHeight; // reflow
+    card.style.animation = 'cardIn 0.35s cubic-bezier(0.16,1,0.3,1) both';
+  }
+
+  // ── Detect page path ──
+  if (window.location.pathname === '/register') showTab('register');
+
+  // ── Show/hide password ──
+  function togglePw(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else { inp.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  // ── Alert ──
+  function showAlert(msg, type='err') {
+    const el = document.getElementById('alert');
+    el.textContent = msg; el.className = `alert ${type} show`;
+  }
+  function hideAlert() {
+    const el = document.getElementById('alert');
+    el.className = 'alert';
+  }
+
+  // ── Field errors ──
+  function setErr(id, msg) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = msg; }
+    const inp = document.getElementById(id.replace('-err', ''));
+    if (inp) inp.classList.toggle('error', !!msg);
+  }
+  function clearErrors() {
+    document.querySelectorAll('.field-err').forEach(e => e.textContent = '');
+    document.querySelectorAll('.input').forEach(i => i.classList.remove('error'));
+  }
+
+  // ── Loading state ──
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (loading) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Júklenmekte...';
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = btnId === 'btn-login' ? 'Kiriw' : 'Akkaunt jaratıw';
+    }
+  }
+
+  // ── Save token and go ──
+  function saveAndRedirect(data) {
+    localStorage.setItem('sb_token',      data.access_token);
+    localStorage.setItem('sb_user_name',  data.user_name);
+    localStorage.setItem('sb_user_email', data.user_email);
+    window.location.replace('/');
+  }
+
+  // ── LOGIN ──
+  async function doLogin() {
+    clearErrors(); hideAlert();
+    const email = document.getElementById('l-email').value.trim();
+    const pw    = document.getElementById('l-pw').value;
+    let ok = true;
+    if (!email) { setErr('l-email-err', 'Bul orın toltırılıwı shárt'); ok=false; }
+    if (!pw)    { setErr('l-pw-err',    'Bul orın toltırılıwı shárt'); ok=false; }
+    if (!ok) return;
+
+    setLoading('btn-login', true);
+    try {
+      const res = await fetch(API + '/api/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password: pw})
+      });
+      const data = await res.json();
+      if (!res.ok) { showAlert(data.detail || 'Qátelik júz berdi'); return; }
+      saveAndRedirect(data);
+    } catch(e) {
+      showAlert('Server menen baylanısıwda qátelik');
+    } finally {
+      setLoading('btn-login', false);
+    }
+  }
+
+  // ── REGISTER ──
+  async function doRegister() {
+    clearErrors(); hideAlert();
+    const name  = document.getElementById('r-name').value.trim();
+    const email = document.getElementById('r-email').value.trim();
+    const pw    = document.getElementById('r-pw').value;
+    const pw2   = document.getElementById('r-pw2').value;
+    const store = document.getElementById('r-store').value.trim();
+    const stype = document.getElementById('r-type').value;
+    let ok = true;
+
+    if (!name)           { setErr('r-name-err',  'Bul orın toltırılıwı shárt'); ok=false; }
+    if (!email)          { setErr('r-email-err', 'Bul orın toltırılıwı shárt'); ok=false; }
+    if (pw.length < 6)   { setErr('r-pw-err',    'Keminde 6 belgi bolıwı kerek'); ok=false; }
+    if (pw !== pw2)      { setErr('r-pw2-err',   'Parollar sáykes kelmedi'); ok=false; }
+    if (!store)          { setErr('r-store-err', 'Bul orın toltırılıwı shárt'); ok=false; }
+    if (!ok) return;
+
+    setLoading('btn-register', true);
+    try {
+      const res = await fetch(API + '/api/auth/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({full_name: name, email, password: pw, store_name: store, store_type: stype})
+      });
+      const data = await res.json();
+      if (!res.ok) { showAlert(data.detail || 'Qátelik júz berdi'); return; }
+      saveAndRedirect(data);
+    } catch(e) {
+      showAlert('Server menen baylanısıwda qátelik');
+    } finally {
+      setLoading('btn-register', false);
+    }
+  }
+
+  // ── Enter key support ──
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const loginVisible = document.getElementById('form-login').style.display !== 'none';
+    if (loginVisible) doLogin();
+    else doRegister();
+  });
+</script>
+</body>
+</html>
